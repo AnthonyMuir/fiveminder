@@ -10,9 +10,11 @@ Choose your company, enter your name, title, contact details and social links, t
 
 ## Profile photos
 
-Choose a photo in the editor and save the prepared profile PNG. Use the editor's GitHub button to upload it into this repository's `photos/` folder. After Cloudflare deploys the change, return to the editor and choose **Use published photo**. GitHub write access is required to upload. An existing public HTTPS photo URL also works.
+Choose **Choose photo** and select a PNG, JPEG or WebP (up to 10 MB). The editor center-crops it to a crisp 512 × 512 PNG, uploads it automatically to Cloudflare, checks that its public image URL loads, and saves that URL in your browser draft. Then click **Copy signature**. No GitHub account or manual publishing steps are needed. You can also paste an existing public HTTPS image URL.
 
-Selecting a photo alone does not publish it. Photos committed here are public so email recipients can display them.
+Uploaded photos are public so email recipients can display them. Existing photo links are never overwritten; choosing a new photo does not break older emails. Upload errors retain the previous photo. Drafts and contact details remain in your browser; only the prepared photo is sent to Cloudflare. Profile photos do not sync between devices automatically.
+
+The upload endpoint accepts only prepared 512-pixel PNGs up to 1 MB, uses immutable content-addressed URLs, deduplicates identical images, restricts browser origins, and applies a best-effort ten-new-images-per-IP-per-hour limit. This is a public team editor, not an authenticated private media vault. KV consistency means rate counters are approximate. A 900-image capacity guard keeps this namespace below the free storage allowance; an administrator can review storage in Cloudflare if it fills up.
 
 ## Branding
 
@@ -22,7 +24,9 @@ FiveMinder uses the approved green logo and black capability footer. Vidaloops u
 
 Source: `AnthonyMuir/fiveminder`, production branch `main`. Cloudflare Pages uses framework **None**, no build command, and output directory `/`. Commits automatically deploy the editor and shared images. The deployed HTTPS address is used automatically for email image URLs.
 
-This static site uses no paid image service, Functions or R2 bucket. Hosting details: https://developers.cloudflare.com/pages/get-started/git-integration/
+Static logos and artwork remain on GitHub/Cloudflare Pages. `_worker.js` handles `/api/photos` and `/profile-images/*`; `_routes.json` keeps static requests out of Functions. Bind `SIGNATURE_PHOTOS` to the isolated KV namespace `fiveminder-signature-photos` in the Pages production settings before deploying. The current account uses Workers Free; no paid image service, R2 bucket or plan upgrade is needed. Free quotas can temporarily stop uploads or image reads if exhausted. See https://developers.cloudflare.com/kv/platform/pricing/.
+
+Deploy all runtime files through the existing GitHub integration (dashboard direct-upload does not deploy Functions). The root build output stays `/`. Do not place credentials in `config.js`; this uploader requires none in the browser.
 
 The starter profile is prefilled with Sean Anthony Muir’s sample details and hosted photo. Choose **Restore sample** to bring them back. Saved team edits remain in their own browser drafts. The editor has been checked in Chromium; rendering in individual email clients can vary.
 

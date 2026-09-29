@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="signature-release" content="20260929-2">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow,noarchive">
     <meta name="color-scheme" content="light">
@@ -393,13 +394,7 @@
                 <button class="file-button" id="choose-photo" type="button">Choose photo</button><input id="photo-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden>
               </span>
             </label>
-            <div class="photo-publishing" id="photo-publishing" hidden>
-              <p class="hosting-help">Your photo looks ready. Publish it so it appears in the emails you send.</p>
-              <button class="action action-secondary" id="save-photo" type="button">1. Save profile PNG</button>
-              <a class="action action-secondary" id="publish-photo" target="_blank" rel="noopener noreferrer">2. Upload photo to GitHub</a>
-              <button class="action action-secondary" id="use-published-photo" type="button">3. Use published photo</button>
-              <p class="hosting-help" id="photo-publishing-help"></p>
-            </div>
+            <p class="hosting-help" id="photo-status" role="status" aria-live="polite">Choose a photo to upload it automatically. Photos are public so email recipients can see them.</p>
           </fieldset>
 
           <fieldset class="control-group">
@@ -468,7 +463,7 @@
             <label class="field">
               <span class="field-label">Public image hosting URL</span>
               <input id="asset-base" type="url" value="" placeholder="https://your-host.com/signatures/">
-              <span class="hosting-help">On the team site, shared images are hosted automatically. Your profile photo needs to be published before copying.</span>
+              <span class="hosting-help">Shared images are hosted automatically. Choosing a profile photo uploads it for you.</span>
             </label>
           </fieldset>
 
@@ -484,7 +479,8 @@
 
     <script src="config.js"></script>
     <script src="profile-tools.js"></script>
-    <script src="brand-profiles.js?v=published-orbit-10"></script>
+    <script src="photo-upload.js?v=20260929-2"></script>
+    <script src="brand-profiles.js?v=release-20260929-2"></script>
     <script>
       function publicBase(value) {
         try {
@@ -550,18 +546,13 @@
       const preview = document.querySelector("#signature-preview");
       const status = document.querySelector("#status");
       const signatureSize = document.querySelector("#signature-size");
+      let photoUploading = false;
       let localPhotoData = "";
       let photoFilename = "";
       let pendingPhotoUrl = "";
       const profileTools = window.FiveMinderProfile;
       const teamConfig = window.FIVEMINDER_CONFIG || {};
-      const teamRepository = profileTools.repository(teamConfig, window.location);
-      const photoPublishUrl = profileTools.uploadUrl(teamRepository, teamConfig.branch, teamConfig.photoRepositoryDirectory || "site/photos");
       const draftKey = "fiveminder-signature:v1:" + new URL(".",window.location.href).pathname;
-      const publishing = document.querySelector("#photo-publishing");
-      const publishLink = document.querySelector("#publish-photo");
-      if(photoPublishUrl) publishLink.href = photoPublishUrl;
-      else { publishLink.hidden = true; document.querySelector("#photo-publishing-help").textContent = "Your team administrator can enable photo publishing. You can also paste an existing public photo URL above."; }
       fields.assetBase.value = state.assetBase;
 
       const brandDraftKey = 'signature-studio:brands:v2:' + new URL('.',window.location.href).pathname;
@@ -637,10 +628,8 @@
         });
         const allowed=[brandAsset(brand.logoWhite),brandAsset(brand.logoTransparent)];
         state.logo=allowed.includes(profile.logo)?profile.logo:allowed[0];
-        localPhotoData=typeof profile.localPhotoData==='string'&&profile.localPhotoData.startsWith('data:image/png;base64,')?profile.localPhotoData:'';
-        photoFilename=typeof profile.photoFilename==='string'?profile.photoFilename:'';
-        pendingPhotoUrl=typeof profile.pendingPhotoUrl==='string'?profile.pendingPhotoUrl:'';
-        const photoPublishing=document.querySelector('#photo-publishing');if(photoPublishing)photoPublishing.hidden=!localPhotoData;
+        if(profile.localPhotoData)fields.photo.value=sampleProfileValues(next).photo;
+        localPhotoData='';photoFilename='';pendingPhotoUrl='';
         refreshBrandUI();
       }
       function restoreDraft() {
@@ -747,7 +736,7 @@ ${orbitPreview && state.brand === "fiveminder" ? `  <tr><td colspan="5" style="p
 
       document.querySelector("#signature-form").addEventListener("input", update);
       fields.brand.addEventListener("change", () => {saveDraft();applyBrand(fields.brand.value);update();});
-      fields.photo.addEventListener("input", () => { localPhotoData = ""; photoFilename=""; pendingPhotoUrl=""; publishing.hidden=true; update(); });
+      fields.photo.addEventListener("input", () => { localPhotoData="";photoFilename="";pendingPhotoUrl="";document.querySelector('#photo-status').textContent='';update(); });
 
       document.querySelectorAll(".logo-option").forEach(button => {
         button.addEventListener("click", () => {
@@ -761,42 +750,20 @@ ${orbitPreview && state.brand === "fiveminder" ? `  <tr><td colspan="5" style="p
         });
       });
 
-      function downloadFile(url,name) {
-        const link=document.createElement("a"); link.href=url; link.download=name; link.click();
-      }
       document.querySelector("#choose-photo").addEventListener("click", () => document.querySelector("#photo-upload").click());
 
       document.querySelector("#photo-upload").addEventListener("change", async event => {
-        const [file]=event.target.files; if(!file)return;
-        if(!["image/png","image/jpeg","image/webp"].includes(file.type)||file.size>10*1024*1024){status.textContent="Choose a PNG, JPEG or WebP photo smaller than 10 MB.";event.target.value="";return;}
-        const objectUrl=URL.createObjectURL(file);
+        const [file]=event.target.files;if(!file)return;
+        const photoStatus=document.querySelector('#photo-status');
+        const locked=[fields.brand,fields.photo,document.querySelector('#choose-photo'),document.querySelector('#reset-profile')].filter(Boolean);
+        photoUploading=true;locked.forEach(control=>control.disabled=true);
         try {
-          const image=new Image(); image.src=objectUrl; await image.decode();
-          const canvas=document.createElement("canvas");canvas.width=512;canvas.height=512;
-          const context=canvas.getContext("2d"); context.imageSmoothingEnabled=true;context.imageSmoothingQuality="high";
-          const side=Math.min(image.naturalWidth,image.naturalHeight);
-          context.drawImage(image,(image.naturalWidth-side)/2,(image.naturalHeight-side)/2,side,side,0,0,512,512);
-          localPhotoData=canvas.toDataURL("image/png");
-          photoFilename=profileTools.photoFilename(fields.name.value,Date.now());
-          const base=publicBase(fields.assetBase.value);
-          pendingPhotoUrl=base?new URL((teamConfig.photoSiteDirectory||"photos/")+photoFilename,base).href:"";
-          fields.photo.value=pendingPhotoUrl||photoFilename;
-          publishing.hidden=false; update();
-          status.textContent="Photo ready. Save the profile PNG, upload it to GitHub, then use the published photo.";
-        } catch { status.textContent="That photo could not be opened. Try another PNG or JPEG."; }
-        finally {URL.revokeObjectURL(objectUrl);event.target.value="";}
-      });
-      document.querySelector("#save-photo").addEventListener("click",()=>{if(localPhotoData&&photoFilename)downloadFile(localPhotoData,photoFilename);});
-      document.querySelector("#use-published-photo").addEventListener("click",async()=>{
-        const url=pendingPhotoUrl||fields.photo.value.trim();
-        if(!profileTools.isPublicHttps(url)){status.textContent="Publish the photo first, then enter its public HTTPS image URL.";return;}
-        const button=document.querySelector("#use-published-photo");button.disabled=true;
-        try {
-          const image=new Image();image.src=url;let timeout;try {await Promise.race([image.decode(),new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error("Image load timed out")),15000);})]);}finally{clearTimeout(timeout);}
-          localPhotoData="";fields.photo.value=url;pendingPhotoUrl="";photoFilename="";publishing.hidden=true;update();
-          status.textContent="Your published photo is ready for outgoing email.";
-        } catch {status.textContent="The photo is not online yet. Commit the PNG on GitHub and wait for the site to finish updating, then try again.";}
-        finally {button.disabled=false;}
+          const url=await window.FiveMinderPhoto.upload(file,'https://fiveminder.pages.dev/api/photos',message=>{photoStatus.textContent=message;});
+          localPhotoData='';photoFilename='';pendingPhotoUrl='';fields.photo.value=url;update();
+          photoStatus.textContent='Photo uploaded. Your signature is ready to copy.';
+          status.textContent='Your hosted photo is ready for outgoing email.';
+        }catch(error){photoStatus.textContent=error.message||'The photo could not upload. Please try again.';}
+        finally{photoUploading=false;locked.forEach(control=>control.disabled=false);event.target.value='';}
       });
       document.querySelector("#reset-profile").addEventListener("click",()=>{
         const selected=state.brand;const brand=brandProfiles[selected];
@@ -837,8 +804,8 @@ ${orbitPreview && state.brand === "fiveminder" ? `  <tr><td colspan="5" style="p
       document.querySelector("#copy-signature").addEventListener("click", async () => {
         update();
         if (!state.name) {status.textContent="Add your name before copying your signature.";fields.name.focus();return;}
-        if (localPhotoData || /^(data|file):/i.test(state.photo)) {
-          status.textContent = "Publish your photo first, then choose Use published photo before copying.";
+        if (photoUploading || localPhotoData || /^(data|file):/i.test(state.photo)) {
+          status.textContent = "Wait for your photo upload to finish before copying.";
           return;
         }
         if (!publicBase(state.assetBase)) {
@@ -856,7 +823,7 @@ ${orbitPreview && state.brand === "fiveminder" ? `  <tr><td colspan="5" style="p
 
       document.querySelector("#download-signature").addEventListener("click", () => {
         update();
-        if(localPhotoData){status.textContent="Publish your photo first, then choose Use published photo before downloading your email signature.";return;}
+        if(photoUploading||localPhotoData){status.textContent="Wait for your photo upload to finish before downloading.";return;}
         const documentHtml = `<!doctype html><html><head><meta charset="utf-8"><title>${brandProfiles[state.brand].name} Email Signature</title></head><body>${signatureMarkup(true)}</body></html>`;
         const url = URL.createObjectURL(new Blob([documentHtml], { type: "text/html" }));
         const link = document.createElement("a");
