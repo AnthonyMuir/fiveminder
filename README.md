@@ -24,6 +24,6 @@ Source: `AnthonyMuir/fiveminder`, production branch `main`. Cloudflare Pages use
 
 This static site uses no paid image service, Functions or R2 bucket. Hosting details: https://developers.cloudflare.com/pages/get-started/git-integration/
 
-The starter profile contains no personal contact information. The editor has been checked in Chromium; rendering in individual email clients can vary.
+The starter profile is prefilled with Sean Anthony Muir’s sample details and hosted photo. Choose **Restore sample** to bring them back. Saved team edits remain in their own browser drafts. The editor has been checked in Chromium; rendering in individual email clients can vary.
 
 Capability icons derive from Phosphor Icons under the MIT license; `LICENSE-phosphor.txt` is included. https://github.com/phosphor-icons/core

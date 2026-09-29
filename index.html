@@ -380,16 +380,16 @@
             <legend>Identity</legend>
             <label class="field">
               <span class="field-label">Name</span>
-              <input id="name" type="text" value="" placeholder="Your name">
+              <input id="name" type="text" value="Sean Anthony Muir" placeholder="Your name">
             </label>
             <label class="field">
               <span class="field-label">Title</span>
-              <input id="title" type="text" value="" placeholder="Your role">
+              <input id="title" type="text" value="Business Development" placeholder="Your role">
             </label>
             <label class="field">
               <span class="field-label">Profile photo</span>
               <span class="photo-row">
-                <input id="photo-url" type="text" value="profile-placeholder.png" aria-label="Photo URL">
+                <input id="photo-url" type="text" value="https://fiveminder.pages.dev/photos/sean-headshot-email.png" aria-label="Photo URL">
                 <button class="file-button" id="choose-photo" type="button">Choose photo</button><input id="photo-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden>
               </span>
             </label>
@@ -406,15 +406,15 @@
             <legend>Contact</legend>
             <label class="field">
               <span class="field-label">Primary phone</span>
-              <input id="phone-primary" type="text" value="" placeholder="Your phone number">
+              <input id="phone-primary" type="text" value="+1 213 481 6747" placeholder="Your phone number">
             </label>
             <label class="field">
               <span class="field-label">Secondary phone</span>
-              <input id="phone-secondary" type="text" value="" placeholder="Optional second number">
+              <input id="phone-secondary" type="text" value="+33 7 67 39 21 31" placeholder="Optional second number">
             </label>
             <label class="field">
               <span class="field-label">Email</span>
-              <input id="email" type="email" value="" placeholder="you@fiveminder.ai">
+              <input id="email" type="email" value="sean@fiveminder.ai" placeholder="you@fiveminder.ai">
             </label>
             <label class="field">
               <span class="field-label">Website</span>
@@ -427,15 +427,15 @@
             <p class="hosting-help" style="margin:0 0 14px;">Enabled icons stay visible. Add your profile URLs to make them clickable.</p>
             <div class="social-control">
               <label class="social-switch" for="social-x-enabled">X <input id="social-x-enabled" type="checkbox" checked></label>
-              <input id="social-x" type="url" value="" placeholder="https://x.com/…" aria-label="X URL">
+              <input id="social-x" type="url" value="https://x.com/seananthonymuir" placeholder="https://x.com/…" aria-label="X URL">
             </div>
             <div class="social-control">
               <label class="social-switch" for="social-linkedin-enabled">LinkedIn <input id="social-linkedin-enabled" type="checkbox" checked></label>
-              <input id="social-linkedin" type="url" value="" placeholder="https://linkedin.com/…" aria-label="LinkedIn URL">
+              <input id="social-linkedin" type="url" value="https://www.linkedin.com/in/seananthonymuir/" placeholder="https://linkedin.com/…" aria-label="LinkedIn URL">
             </div>
             <div class="social-control">
               <label class="social-switch" for="social-instagram-enabled">Instagram <input id="social-instagram-enabled" type="checkbox" checked></label>
-              <input id="social-instagram" type="url" value="" placeholder="https://instagram.com/…" aria-label="Instagram URL">
+              <input id="social-instagram" type="url" value="https://www.instagram.com/seananthonymuir/" placeholder="https://instagram.com/…" aria-label="Instagram URL">
             </div>
             <div class="social-control">
               <label class="social-switch" for="social-youtube-enabled">YouTube <input id="social-youtube-enabled" type="checkbox"></label>
@@ -475,7 +475,7 @@
           <div class="actions">
             <button id="copy-signature" class="action action-primary" type="button">Copy signature</button>
             <button id="download-signature" class="action action-secondary" type="button">Download signature HTML</button>
-            <button id="reset-profile" class="action action-secondary" type="button">Reset my details</button>
+            <button id="reset-profile" class="action action-secondary" type="button">Restore sample</button>
           </div>
           <p id="status" role="status" aria-live="polite"></p>
         </form>
@@ -503,25 +503,25 @@
 
       const defaults = {
         brand: "fiveminder",
-        name: "",
-        title: "",
-        photo: "profile-placeholder.png",
-        phonePrimary: "",
-        phoneSecondary: "",
-        email: "",
+        name: "Sean Anthony Muir",
+        title: "Business Development",
+        photo: "https://fiveminder.pages.dev/photos/sean-headshot-email.png",
+        phonePrimary: "+1 213 481 6747",
+        phoneSecondary: "+33 7 67 39 21 31",
+        email: "sean@fiveminder.ai",
         website: "https://fiveminder.ai",
         headlinePrimary: "",
         headlineSecondary: "",
-        x: "",
+        x: "https://x.com/seananthonymuir",
         xEnabled: true,
-        linkedin: "",
+        linkedin: "https://www.linkedin.com/in/seananthonymuir/",
         linkedinEnabled: true,
-        instagram: "",
+        instagram: "https://www.instagram.com/seananthonymuir/",
         instagramEnabled: true,
         youtube: "",
         youtubeEnabled: false,
         logo: "5minder-logo-white.png",
-        assetBase: publicBase(new URL(".", window.location.href).href)
+        assetBase: publicBase(new URL(".", window.location.href).href) || "https://fiveminder.pages.dev/"
       };
 
       const fields = {
@@ -599,18 +599,25 @@
           const selected=state.logo===logo;option.dataset.selected=String(selected);option.setAttribute('aria-pressed',String(selected));
         });
       }
+      function sampleProfileValues(brandKey) {
+        const brand = brandProfiles[brandKey];
+        return {...defaults, brand:brandKey, website:brand.website, headlinePrimary:brand.headlinePrimary, headlineSecondary:brand.headlineSecondary};
+      }
       function applyBrand(value) {
         const next=Object.prototype.hasOwnProperty.call(brandProfiles,value)?value:'fiveminder';
         const brand=brandProfiles[next];
         let profile=brandDrafts[next];
         if(!profile) {
-          profile=captureProfile();
-          profile.values.website=brand.website;
-          profile.values.headlinePrimary=brand.headlinePrimary;
-          profile.values.headlineSecondary=brand.headlineSecondary;
-          if(next!==state.brand)profile.values.email='';
-          if(!profile.values.photo||/profile-placeholder\.png$/.test(profile.values.photo))profile.values.photo=brandAsset(brand.placeholder);
-          profile.logo=brandAsset(brand.logoWhite);
+          profile={values:sampleProfileValues(next),logo:brandAsset(brand.logoWhite),localPhotoData:'',photoFilename:'',pendingPhotoUrl:''};
+        }
+        profile.values={...sampleProfileValues(next),...profile.values};
+        // Refresh empty legacy starter drafts without overwriting another person's profile.
+        if(!profile.values.name || profile.values.name===defaults.name) {
+          const sample=sampleProfileValues(next);
+          for(const key of ['name','title','photo','phonePrimary','phoneSecondary','email','website','x','linkedin','instagram']) {
+            if(!String(profile.values[key]||'').trim()) profile.values[key]=sample[key];
+          }
+          if(/profile-placeholder\.png$/.test(profile.values.photo) || /^(assets\/)?sean-headshot-email\.png$/.test(profile.values.photo)) profile.values.photo=sample.photo;
         }
         // Replace the original reskin's starter slogan while preserving edited company copy.
         if(next==='vidaloops'&&profile.values.headlinePrimary==='The teammate who always picks up'&&profile.values.headlineSecondary==='and brings you in when it matters.') {
@@ -658,7 +665,11 @@
       function assetUrl(path, hosted) {
         if (!path || path.startsWith("data:") || /^https?:\/\//i.test(path)) return path;
         if (!hosted || !state.assetBase) return path;
-        try { return new URL(path, publicBase(state.assetBase)).href; } catch { return path; }
+        try {
+          const base=publicBase(state.assetBase);
+          const hostedPath=new URL(base).hostname==='fiveminder.pages.dev' ? path.replace(/^(assets|concepts)\//,'') : path;
+          return new URL(hostedPath,base).href;
+        } catch { return path; }
       }
 
       function phoneHref(phone) {
@@ -713,7 +724,7 @@
     </td>
     <td width="${p.right}" style="width:${p.right}px;">&nbsp;</td>
   </tr>
-${orbitPreview && state.brand === "fiveminder" ? `  <tr><td colspan="5" style="padding:0 16px 16px;background:#FFFFFF;"><a href="${escapeHtml(webLink(state.website||brand.website))}" style="text-decoration:none;"><img src="${asset("fiveminder-3d-footer-orbit-airy.png")}" width="${p.width-32}" height="224" alt="The teammate who always picks up and brings you in when it matters. Calls and messages, online customer service, appointments, lead follow-ups and outbound calls." style="display:block;width:${p.width-32}px;height:224px;border:0;"></a></td></tr>` : brand.footer === "portfolio" ? `  <tr><td colspan="5" style="padding:0 16px 16px;background:#FFFFFF;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${p.width-32}" style="width:${p.width-32}px;border-collapse:collapse;"><tr><td width="${p.width-32}" height="224" align="center" valign="middle" background="${asset(brandAsset(brand.banner))}" bgcolor="#0D0C0B" style="width:${p.width-32}px;height:224px;padding:0;background-image:url('${asset(brandAsset(brand.banner))}');background-position:center;background-repeat:no-repeat;background-size:${p.width-32}px 224px;">
+${orbitPreview && state.brand === "fiveminder" ? `  <tr><td colspan="5" style="padding:0 16px 16px;background:#FFFFFF;"><a href="${escapeHtml(webLink(state.website||brand.website))}" style="text-decoration:none;"><img src="${asset("fiveminder-3d-footer-orbit-circular.png")}" width="${p.width-32}" height="224" alt="The teammate who always picks up and brings you in when it matters. Calls and messages, online customer service, appointments, lead follow-ups and outbound calls." style="display:block;width:${p.width-32}px;height:224px;border:0;"></a></td></tr>` : brand.footer === "portfolio" ? `  <tr><td colspan="5" style="padding:0 16px 16px;background:#FFFFFF;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${p.width-32}" style="width:${p.width-32}px;border-collapse:collapse;"><tr><td width="${p.width-32}" height="224" align="center" valign="middle" background="${asset(brandAsset(brand.banner))}" bgcolor="#0D0C0B" style="width:${p.width-32}px;height:224px;padding:0;background-image:url('${asset(brandAsset(brand.banner))}');background-position:center;background-repeat:no-repeat;background-size:${p.width-32}px 224px;">
 <!--[if gte mso 9]><v:rect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" fill="true" stroke="false" style="width:${p.width-32}px;height:224px;"><v:fill type="frame" src="${asset(brandAsset(brand.banner))}" color="#0D0C0B"/><v:textbox inset="0,0,0,0"><![endif]-->
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${p.width-32}" height="224" style="width:${p.width-32}px;height:224px;border-collapse:collapse;"><tr><td height="224" align="center" valign="middle" style="height:224px;padding:0 12px 28px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:22px;line-height:26px;font-weight:400;font-style:normal;letter-spacing:0;text-align:center;color:#FFFFFF;">${state.headlinePrimary ? `<a href="${escapeHtml(webLink(state.website||brand.website))}" style="color:#FFFFFF;text-decoration:none;white-space:nowrap;">${portfolioHeadline(state.headlinePrimary)}</a>` : ""}</td></tr></table>
 <!--[if gte mso 9]></v:textbox></v:rect><![endif]-->
@@ -789,9 +800,9 @@ ${orbitPreview && state.brand === "fiveminder" ? `  <tr><td colspan="5" style="p
       });
       document.querySelector("#reset-profile").addEventListener("click",()=>{
         const selected=state.brand;const brand=brandProfiles[selected];
-        const values={...defaults,website:brand.website,email:'',photo:brandAsset(brand.placeholder),headlinePrimary:brand.headlinePrimary,headlineSecondary:brand.headlineSecondary};
+        const values=sampleProfileValues(selected);
         brandDrafts[selected]={values,logo:brandAsset(brand.logoWhite),localPhotoData:'',photoFilename:'',pendingPhotoUrl:''};
-        applyBrand(selected);update();status.textContent='Your '+brand.name+' details have been reset in this browser.';
+        applyBrand(selected);update();status.textContent='Your '+brand.name+' sample details have been restored in this browser.';
       });
 
       async function copyRichSignature(html) {
