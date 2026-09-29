@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow,noarchive">
+    <meta name="color-scheme" content="light">
+    <title>5Minder Signature</title>
+    <style>
+      :root {
+        --ink: #171717;
+        --muted: #777672;
+        --line: #deded9;
+        --paper: #ffffff;
+        --wash: #f3f2ee;
+        --accent: #00c479;
+        --signature-width: 556px;
+        --signature-min-height: 430px;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        color: var(--ink);
+        background: var(--wash);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      button, input, select { font: inherit; }
+
+      .app {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 364px;
+        min-height: 100vh;
+      }
+
+      .workspace {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 30px;
+      }
+
+      .workspace-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin: 0 auto 22px;
+        width: min(100%, var(--signature-width));
+      }
+
+      .workspace-head h1 {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.2;
+        font-weight: 700;
+      }
+
+      .signature-switch {
+        align-items: center;
+        display: flex;
+        gap: 9px;
+      }
+
+      .signature-size {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .signature-switch select {
+        height: 30px;
+        padding: 0 25px 0 8px;
+        color: var(--ink);
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      .preview-scroll {
+        width: min(100%, var(--signature-width));
+        margin: 0 auto;
+        overflow: auto;
+        background: var(--paper);
+        box-shadow: 0 16px 34px rgba(25, 24, 21, .08);
+      }
+
+      #signature-preview {
+        width: var(--signature-width);
+        min-height: var(--signature-min-height);
+        background: var(--paper);
+      }
+
+      .panel {
+        min-height: 100vh;
+        padding: 28px 24px 32px;
+        color: #f8f8f5;
+        background: #1b1a18;
+        border-left: 1px solid #33312d;
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 26px;
+      }
+
+      .panel-emblem {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+      }
+
+      .panel-head h2 {
+        margin: 0;
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .control-group {
+        margin: 0 0 25px;
+        padding: 0 0 24px;
+        border: 0;
+        border-bottom: 1px solid #393733;
+      }
+
+      .control-group:last-of-type { margin-bottom: 18px; }
+
+      legend {
+        width: 100%;
+        margin: 0 0 15px;
+        padding: 0;
+        color: #f8f8f5;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+
+      .field { display: block; margin: 0 0 13px; }
+      .field:last-child { margin-bottom: 0; }
+      .social-control { margin: 0 0 13px; }
+      .social-control:last-child { margin-bottom: 0; }
+
+      .social-switch {
+        align-items: center;
+        color: #f1f1ef;
+        display: flex;
+        font-size: 13px;
+        font-weight: 700;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+
+      .social-switch input {
+        appearance: none;
+        background: #2b2929;
+        border: 1px solid #4a4644;
+        border-radius: 10px;
+        cursor: pointer;
+        height: 20px;
+        margin: 0;
+        position: relative;
+        width: 36px;
+      }
+
+      .social-switch input::after {
+        background: #f6f5f2;
+        border-radius: 50%;
+        content: "";
+        height: 14px;
+        left: 2px;
+        position: absolute;
+        top: 2px;
+        transition: transform 160ms ease;
+        width: 14px;
+      }
+
+      .social-switch input:checked { background: #00c479; border-color: #00c479; }
+      .social-switch input:checked::after { transform: translateX(14px); }
+
+      .field-label {
+        display: block;
+        margin-bottom: 6px;
+        color: #b5b3ad;
+        font-size: 12px;
+        line-height: 1.2;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      input[type="url"] {
+        width: 100%;
+        height: 38px;
+        padding: 0 10px;
+        color: #f8f8f5;
+        background: #272522;
+        border: 1px solid #46433d;
+        border-radius: 4px;
+        outline: none;
+        font-size: 14px;
+      }
+
+      input:focus { border-color: var(--accent); }
+
+      .logo-options {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .logo-option {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 54px;
+        padding: 8px;
+        background: #f6f5f2;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .logo-option[data-selected="true"] { border-color: var(--accent); }
+      .logo-option img { width: 100%; height: 30px; object-fit: contain; }
+
+      .logo-option span {
+        position: absolute;
+        right: 6px;
+        bottom: 5px;
+        color: #585550;
+        font-size: 10px;
+      }
+
+      .photo-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: end;
+      }
+
+      .file-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        padding: 0 11px;
+        color: #f8f8f5;
+        border: 1px solid #5a5750;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .file-button input { display: none; }
+
+      .actions { display: grid; gap: 8px; }
+
+      .action {
+        min-height: 42px;
+        border: 0;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .action-primary { color: #171717; background: var(--accent); }
+      .action-secondary { color: #f8f8f5; background: transparent; border: 1px solid #5a5750; }
+
+      #status {
+        min-height: 17px;
+        margin: 11px 0 0;
+        color: #b5b3ad;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      @media (max-width: 920px) {
+        .app { grid-template-columns: 1fr; }
+        .panel { min-height: auto; border-top: 1px solid #33312d; border-left: 0; }
+        .workspace { min-height: 620px; }
+      }
+
+      @media (max-width: 640px) {
+        .workspace { padding: 18px; }
+        .workspace-head { margin-bottom: 14px; }
+        .panel { padding: 22px 18px; }
+      }
+      :root { --ink:#102b25; --muted:#6b7c74; --line:#dce6df; --wash:#edf3ee; }
+      .app { grid-template-columns:minmax(0,1fr) 360px; }
+      .workspace { padding:64px 36px; }
+      .workspace-head { align-items:center; width:min(100%,650px); margin-bottom:12px; gap:20px; }
+      .workspace-head h1 { font-size:25px; font-weight:600; letter-spacing:-.6px; }
+      .eyebrow { margin:0 0 12px; font-size:10px; letter-spacing:1.8px; font-weight:700; color:#56836a; }
+      .preview-caption { width:min(100%,650px); margin:0 auto 30px; font-size:13px; color:var(--muted); }
+      .signature-switch { flex-shrink:0; }
+      .signature-size { display:none; }
+      .signature-switch select { height:36px; border-radius:6px; }
+      .preview-scroll { border-radius:8px; border:1px solid #dce6df; box-shadow:0 18px 50px #102b2510; }
+      #signature-preview { min-height:0; }
+      .panel { background:#fff; color:var(--ink); border-color:var(--line); padding:32px 24px; }
+      .panel-head { margin-bottom:30px; }
+      .panel-head h2 { font-size:16px; }
+      .panel-emblem { width:30px;height:28px;object-fit:contain; }
+      .control-group { border-color:var(--line); margin-bottom:22px; padding-bottom:22px; }
+      legend { color:#365f4e; font-size:10px; letter-spacing:1.5px; }
+      .field-label { color:#68786f; }
+      input[type="text"], input[type="email"], input[type="url"] { color:var(--ink); background:#f8faf8; border-color:#d8e3dc; border-radius:6px; font-size:13px; }
+      input:focus-visible, button:focus-visible, select:focus-visible { outline:2px solid #008d57; outline-offset:3px; }
+      input::placeholder { color:#87978d; }
+      .file-button { color:#365f4e; border-color:#d8e3dc; border-radius:6px; }
+      .social-switch { color:#365f4e; font-weight:400; }
+      .social-switch input { background:#e6ede8; border-color:#cfdbd1; }
+      .logo-options { grid-template-columns:repeat(2,1fr); }
+      .logo-option { background:#f8faf8; min-height:64px; border:1px solid #dce6df; border-radius:6px; }
+      .logo-option span { color:#6b7c74; font-size:9px; }
+      .action { border-radius:6px; }
+      .action-primary { background:#00c479; color:#102b25; }
+      .action-primary:hover { background:#00b870; }
+      .action-secondary { color:#365f4e; border-color:#d8e3dc; }
+      .hosting-help { display:block; margin-top:9px; color:#6b7c74; font-size:11px; line-height:1.6; }
+      #status { color:#365f4e; }
+      @media(max-width:920px) { .app { grid-template-columns:1fr; } .workspace { min-height:0; padding:36px 22px; } .panel { border-top:1px solid var(--line); } }
+      @media(max-width:640px) { .workspace-head { align-items:flex-start; flex-direction:column; } .workspace-head h1 { font-size:23px; } .workspace { padding:28px 16px; } .preview-caption { line-height:1.5; } }
+      .photo-publishing { margin-top:12px; display:grid;gap:8px; }
+      .photo-publishing[hidden], .photo-publishing a[hidden] { display:none; }
+      .photo-publishing .action { font-size:12px;text-decoration:none;text-align:center; }
+      .action:disabled { opacity:.5;cursor:wait; }
+    
+      .eyebrow { color:var(--muted); }
+      .action-primary { background:var(--accent); }
+      .action-primary:hover { background:var(--accent); filter:brightness(.94); }
+      body[data-brand="vidaloops"] { --line:#eadde3; }
+      body[data-brand="vidaloops"] .preview-scroll, body[data-brand="vidaloops"] .logo-option { border-color:var(--line); }
+      body[data-brand="vidaloops"] legend, body[data-brand="vidaloops"] .file-button, body[data-brand="vidaloops"] .social-switch, body[data-brand="vidaloops"] .action-secondary, body[data-brand="vidaloops"] #status { color:#7b3d54; }
+      body[data-brand="vidaloops"] .field-label, body[data-brand="vidaloops"] .hosting-help, body[data-brand="vidaloops"] .logo-option span { color:#806d76; }
+      body[data-brand="vidaloops"] input[type="text"], body[data-brand="vidaloops"] input[type="email"], body[data-brand="vidaloops"] input[type="url"], body[data-brand="vidaloops"] .logo-option { background:#fff9fb;border-color:var(--line); }
+      body[data-brand="vidaloops"] input::placeholder { color:#a58b98; }
+      body[data-brand="vidaloops"] input:focus-visible, body[data-brand="vidaloops"] button:focus-visible, body[data-brand="vidaloops"] select:focus-visible { outline-color:#d62453; }
+      body[data-brand="vidaloops"] .social-switch input { background:#f5e8ed;border-color:#eadde3; }
+      body[data-brand="vidaloops"] .social-switch input:checked { background:var(--accent); }
+      body[data-brand="vidaloops"] .action-primary { color:#FFFFFF; }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <section class="workspace" aria-label="Signature preview">
+        <header class="workspace-head">
+          <div><p class="eyebrow">5MINDER / BRAND STUDIO</p><h1>Your FiveMinder signature.</h1></div>
+          <div class="signature-switch">
+            <span id="signature-size" class="signature-size">556 px</span>
+            <select id="company-brand" aria-label="Company">
+              <option value="fiveminder">FiveMinder</option>
+              <option value="vidaloops">Vidaloops</option>
+            </select>
+          </div>
+        </header>
+        <p class="preview-caption">Add your details, choose a photo, and copy your signature. Your changes are saved in this browser.</p>
+        <div class="preview-scroll">
+          <div id="signature-preview"></div>
+        </div>
+      </section>
+
+      <aside class="panel" aria-label="Signature settings">
+        <header class="panel-head">
+          <img class="panel-emblem" src="5minder-emblem.png" alt="">
+          <h2>Signature settings</h2>
+        </header>
+
+        <form id="signature-form">
+          <fieldset class="control-group">
+            <legend>Identity</legend>
+            <label class="field">
+              <span class="field-label">Name</span>
+              <input id="name" type="text" value="" placeholder="Your name">
+            </label>
+            <label class="field">
+              <span class="field-label">Title</span>
+              <input id="title" type="text" value="" placeholder="Your role">
+            </label>
+            <label class="field">
+              <span class="field-label">Profile photo</span>
+              <span class="photo-row">
+                <input id="photo-url" type="text" value="profile-placeholder.png" aria-label="Photo URL">
+                <button class="file-button" id="choose-photo" type="button">Choose photo</button><input id="photo-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+              </span>
+            </label>
+            <div class="photo-publishing" id="photo-publishing" hidden>
+              <p class="hosting-help">Your photo looks ready. Publish it so it appears in the emails you send.</p>
+              <button class="action action-secondary" id="save-photo" type="button">1. Save profile PNG</button>
+              <a class="action action-secondary" id="publish-photo" target="_blank" rel="noopener noreferrer">2. Upload photo to GitHub</a>
+              <button class="action action-secondary" id="use-published-photo" type="button">3. Use published photo</button>
+              <p class="hosting-help" id="photo-publishing-help"></p>
+            </div>
+          </fieldset>
+
+          <fieldset class="control-group">
+            <legend>Contact</legend>
+            <label class="field">
+              <span class="field-label">Primary phone</span>
+              <input id="phone-primary" type="text" value="" placeholder="Your phone number">
+            </label>
+            <label class="field">
+              <span class="field-label">Secondary phone</span>
+              <input id="phone-secondary" type="text" value="" placeholder="Optional second number">
+            </label>
+            <label class="field">
+              <span class="field-label">Email</span>
+              <input id="email" type="email" value="" placeholder="you@fiveminder.ai">
+            </label>
+            <label class="field">
+              <span class="field-label">Website</span>
+              <input id="website" type="url" value="https://fiveminder.ai" placeholder="https://fiveminder.ai">
+            </label>
+          </fieldset>
+
+          <fieldset class="control-group">
+            <legend>Social links</legend>
+            <p class="hosting-help" style="margin:0 0 14px;">Enabled icons stay visible. Add your profile URLs to make them clickable.</p>
+            <div class="social-control">
+              <label class="social-switch" for="social-x-enabled">X <input id="social-x-enabled" type="checkbox" checked></label>
+              <input id="social-x" type="url" value="" placeholder="https://x.com/…" aria-label="X URL">
+            </div>
+            <div class="social-control">
+              <label class="social-switch" for="social-linkedin-enabled">LinkedIn <input id="social-linkedin-enabled" type="checkbox" checked></label>
+              <input id="social-linkedin" type="url" value="" placeholder="https://linkedin.com/…" aria-label="LinkedIn URL">
+            </div>
+            <div class="social-control">
+              <label class="social-switch" for="social-instagram-enabled">Instagram <input id="social-instagram-enabled" type="checkbox" checked></label>
+              <input id="social-instagram" type="url" value="" placeholder="https://instagram.com/…" aria-label="Instagram URL">
+            </div>
+            <div class="social-control">
+              <label class="social-switch" for="social-youtube-enabled">YouTube <input id="social-youtube-enabled" type="checkbox"></label>
+              <input id="social-youtube" type="url" value="" aria-label="YouTube URL">
+            </div>
+          </fieldset>
+
+          <fieldset class="control-group">
+            <legend>Logo</legend>
+            <div class="logo-options" role="group" aria-label="Logo background">
+              <button class="logo-option" type="button" data-logo="5minder-logo-white.png" aria-pressed="true"><img src="5minder-logo-white.png" alt="5Minder logo on white"><span>White backing</span></button>
+              <button class="logo-option" type="button" data-logo="5minder-logo.png" aria-pressed="false"><img src="5minder-logo.png" alt="Transparent 5Minder logo"><span>Transparent</span></button>
+            </div>
+          </fieldset>
+
+          <fieldset class="control-group">
+            <legend>Banner headline</legend>
+            <label class="field">
+              <span class="field-label">Bold line</span>
+              <input id="headline-primary" type="text" value="The teammate who always picks up">
+            </label>
+            <label class="field">
+              <span class="field-label">Light line</span>
+              <input id="headline-secondary" type="text" value="and brings you in when it matters.">
+            </label>
+          </fieldset>
+
+          <fieldset class="control-group">
+            <legend>Email images</legend>
+            <label class="field">
+              <span class="field-label">Public image hosting URL</span>
+              <input id="asset-base" type="url" value="" placeholder="https://your-host.com/signatures/">
+              <span class="hosting-help">On the team site, shared images are hosted automatically. Your profile photo needs to be published before copying.</span>
+            </label>
+          </fieldset>
+
+          <div class="actions">
+            <button id="copy-signature" class="action action-primary" type="button">Copy signature</button>
+            <button id="download-signature" class="action action-secondary" type="button">Download signature HTML</button>
+            <button id="reset-profile" class="action action-secondary" type="button">Reset my details</button>
+          </div>
+          <p id="status" role="status" aria-live="polite"></p>
+        </form>
+      </aside>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="profile-tools.js"></script>
+    <script src="brand-profiles.js"></script>
+    <script>
+      function publicBase(value) {
+        try {
+          const url = new URL(value);
+          if (url.protocol !== "https:" || /^(localhost|127\.|0\.|\[::1\])/.test(url.hostname)) return "";
+          return url.href.endsWith("/") ? url.href : url.href + "/";
+        } catch { return ""; }
+      }
+      function webLink(value) {
+        try { const url = new URL(value); return /^https?:$/.test(url.protocol) ? url.href : ""; } catch { return ""; }
+      }
+      const signaturePreset = { width:556, previewHeight:430, left:24, photo:88, gap:28, info:392, right:24, top:26, nameSize:20, titleSize:14, contactSize:13, contactLine:23, logoWidth:145, logoHeight:30, bannerHeight:188 };
+      const brandProfiles = window.SignatureBrands;
+      const brandAsset = name => ""+name;
+
+      const defaults = {
+        brand: "fiveminder",
+        name: "",
+        title: "",
+        photo: "profile-placeholder.png",
+        phonePrimary: "",
+        phoneSecondary: "",
+        email: "",
+        website: "https://fiveminder.ai",
+        headlinePrimary: "The teammate who always picks up",
+        headlineSecondary: "and brings you in when it matters.",
+        x: "",
+        xEnabled: true,
+        linkedin: "",
+        linkedinEnabled: true,
+        instagram: "",
+        instagramEnabled: true,
+        youtube: "",
+        youtubeEnabled: false,
+        logo: "5minder-logo-white.png",
+        assetBase: publicBase(new URL(".", window.location.href).href)
+      };
+
+      const fields = {
+        brand: document.querySelector("#company-brand"),
+        name: document.querySelector("#name"),
+        title: document.querySelector("#title"),
+        photo: document.querySelector("#photo-url"),
+        phonePrimary: document.querySelector("#phone-primary"),
+        phoneSecondary: document.querySelector("#phone-secondary"),
+        email: document.querySelector("#email"),
+        website: document.querySelector("#website"),
+        headlinePrimary: document.querySelector("#headline-primary"),
+        headlineSecondary: document.querySelector("#headline-secondary"),
+        x: document.querySelector("#social-x"),
+        xEnabled: document.querySelector("#social-x-enabled"),
+        linkedin: document.querySelector("#social-linkedin"),
+        linkedinEnabled: document.querySelector("#social-linkedin-enabled"),
+        instagram: document.querySelector("#social-instagram"),
+        instagramEnabled: document.querySelector("#social-instagram-enabled"),
+        youtube: document.querySelector("#social-youtube"),
+        youtubeEnabled: document.querySelector("#social-youtube-enabled"),
+        assetBase: document.querySelector("#asset-base")
+      };
+
+      const state = { ...defaults };
+      const preview = document.querySelector("#signature-preview");
+      const status = document.querySelector("#status");
+      const signatureSize = document.querySelector("#signature-size");
+      let localPhotoData = "";
+      let photoFilename = "";
+      let pendingPhotoUrl = "";
+      const profileTools = window.FiveMinderProfile;
+      const teamConfig = window.FIVEMINDER_CONFIG || {};
+      const teamRepository = profileTools.repository(teamConfig, window.location);
+      const photoPublishUrl = profileTools.uploadUrl(teamRepository, teamConfig.branch, teamConfig.photoRepositoryDirectory || "site/photos");
+      const draftKey = "fiveminder-signature:v1:" + new URL(".",window.location.href).pathname;
+      const publishing = document.querySelector("#photo-publishing");
+      const publishLink = document.querySelector("#publish-photo");
+      if(photoPublishUrl) publishLink.href = photoPublishUrl;
+      else { publishLink.hidden = true; document.querySelector("#photo-publishing-help").textContent = "Your team administrator can enable photo publishing. You can also paste an existing public photo URL above."; }
+      fields.assetBase.value = state.assetBase;
+
+      const brandDraftKey = 'signature-studio:brands:v2:' + new URL('.',window.location.href).pathname;
+      let brandDrafts = {};
+
+      function captureProfile() {
+        const values = {};
+        Object.entries(fields).forEach(([key,field])=>{if(key!=='assetBase'&&key!=='brand')values[key]=field.type==='checkbox'?field.checked:field.value;});
+        return {values,logo:state.logo,localPhotoData,photoFilename,pendingPhotoUrl};
+      }
+      function saveDraft() {
+        brandDrafts[state.brand]=captureProfile();
+        try {localStorage.setItem(brandDraftKey,JSON.stringify({selected:state.brand,profiles:brandDrafts}));} catch { /* A signature still works when browser storage is unavailable. */ }
+      }
+      function refreshBrandUI() {
+        const brand=brandProfiles[state.brand];
+        document.body.dataset.brand=state.brand;
+        document.title=brand.name+' Signature';
+        document.querySelector('.workspace-head h1').textContent='Your '+brand.name+' signature.';
+        document.querySelector('.eyebrow').textContent=brand.name.toUpperCase()+' / BRAND STUDIO';
+        document.querySelector('.panel-emblem').src=brandAsset(brand.emblem);
+        document.documentElement.style.setProperty('--accent',brand.accent);
+        document.documentElement.style.setProperty('--ink',brand.ink);
+        document.documentElement.style.setProperty('--muted',brand.muted);
+        document.documentElement.style.setProperty('--wash',brand.wash);
+        fields.email.placeholder='you@'+new URL(brand.website).hostname;
+        fields.website.placeholder=brand.website;
+        fields.headlineSecondary.closest('label').querySelector('.field-label').textContent=brand.footer==='portfolio'?'Second line':'Light line';
+        document.querySelectorAll('.logo-option').forEach((option,index)=>{
+          const logo=brandAsset(index===0?brand.logoWhite:brand.logoTransparent);
+          option.dataset.logo=logo;option.querySelector('img').src=logo;
+          option.querySelector('img').alt=brand.name+(index===0?' logo on white':' transparent logo');
+          const selected=state.logo===logo;option.dataset.selected=String(selected);option.setAttribute('aria-pressed',String(selected));
+        });
+      }
+      function applyBrand(value) {
+        const next=Object.prototype.hasOwnProperty.call(brandProfiles,value)?value:'fiveminder';
+        const brand=brandProfiles[next];
+        let profile=brandDrafts[next];
+        if(!profile) {
+          profile=captureProfile();
+          profile.values.website=brand.website;
+          profile.values.headlinePrimary=brand.headlinePrimary;
+          profile.values.headlineSecondary=brand.headlineSecondary;
+          if(next!==state.brand)profile.values.email='';
+          if(!profile.values.photo||/profile-placeholder\.png$/.test(profile.values.photo))profile.values.photo=brandAsset(brand.placeholder);
+          profile.logo=brandAsset(brand.logoWhite);
+        }
+        // Replace the original reskin's starter slogan while preserving edited company copy.
+        if(next==='vidaloops'&&profile.values.headlinePrimary===brandProfiles.fiveminder.headlinePrimary&&profile.values.headlineSecondary===brandProfiles.fiveminder.headlineSecondary) {
+          profile.values.headlinePrimary=brand.headlinePrimary;profile.values.headlineSecondary=brand.headlineSecondary;
+        }
+        state.brand=next;fields.brand.value=next;
+        Object.entries(fields).forEach(([key,field])=>{
+          if(key==='brand'||key==='assetBase')return;
+          if(!Object.prototype.hasOwnProperty.call(profile.values||{},key))return;
+          if(field.type==='checkbox')field.checked=profile.values[key]===true;
+          else if(typeof profile.values[key]==='string')field.value=profile.values[key];
+        });
+        const allowed=[brandAsset(brand.logoWhite),brandAsset(brand.logoTransparent)];
+        state.logo=allowed.includes(profile.logo)?profile.logo:allowed[0];
+        localPhotoData=typeof profile.localPhotoData==='string'&&profile.localPhotoData.startsWith('data:image/png;base64,')?profile.localPhotoData:'';
+        photoFilename=typeof profile.photoFilename==='string'?profile.photoFilename:'';
+        pendingPhotoUrl=typeof profile.pendingPhotoUrl==='string'?profile.pendingPhotoUrl:'';
+        const photoPublishing=document.querySelector('#photo-publishing');if(photoPublishing)photoPublishing.hidden=!localPhotoData;
+        refreshBrandUI();
+      }
+      function restoreDraft() {
+        let selected='fiveminder';
+        try {
+          const saved=JSON.parse(localStorage.getItem(brandDraftKey)||'null');
+          if(saved&&saved.profiles&&typeof saved.profiles==='object') {brandDrafts=saved.profiles;selected=saved.selected;}
+          else {
+            const legacy=JSON.parse(localStorage.getItem('fiveminder-signature:v1:'+new URL('.',window.location.href).pathname)||'null');
+            if(legacy&&legacy.values)brandDrafts.fiveminder=legacy;
+          }
+        } catch { /* Use the starter profile if a saved draft is damaged. */ }
+        applyBrand(selected);
+      }
+
+      function escapeHtml(value) {
+        return String(value || "").replace(/[&<>'\"]/g, char => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;"
+        }[char]));
+      }
+
+      function assetUrl(path, hosted) {
+        if (!path || path.startsWith("data:") || /^https?:\/\//i.test(path)) return path;
+        if (!hosted || !state.assetBase) return path;
+        try { return new URL(path, publicBase(state.assetBase)).href; } catch { return path; }
+      }
+
+      function phoneHref(phone) {
+        const normalized = String(phone || "").replace(/[^\d+]/g, "").replace(/^\+330/, "+33");
+        return normalized ? `tel:${normalized}` : "";
+      }
+
+      function socialCell(url, icon, label, spacer, hosted) {
+        const image = `<img src="${escapeHtml(assetUrl(`${icon}`, hosted))}" width="24" height="24" alt="${label}" style="display:block;width:24px;height:24px;border:0;">`;
+        const href = webLink(url);
+        return `<td style="padding:0 ${spacer}px 0 0;">${href ? `<a href="${escapeHtml(href)}" style="text-decoration:none;">${image}</a>` : image}</td>`;
+      }
+
+      function signatureMarkup(hosted) {
+        const p = signaturePreset;
+        const brand = brandProfiles[state.brand];
+        const displayTitle = state.title || (hosted ? "" : "Your title");
+        const asset = path => escapeHtml(assetUrl(path, hosted));
+        const linkStyle = `color:${brand.contact};text-decoration:none;`;
+        const phones = [state.phonePrimary, state.phoneSecondary].filter(Boolean);
+        const socials = [
+          [state.xEnabled, state.x, "social-x.png", "X"],
+          [state.linkedinEnabled, state.linkedin, "social-linkedin.png", "LinkedIn"],
+          [state.instagramEnabled, state.instagram, "social-instagram.png", "Instagram"],
+          [state.youtubeEnabled, state.youtube, "social-youtube.png", "YouTube"]
+        ].filter(([enabled]) => enabled);
+        const row = (label, content) => `<tr><td width="48" valign="top" style="width:48px;padding:0 10px 0 0;font-size:${p.contactSize}px;line-height:${p.contactLine}px;color:${brand.contact};font-weight:700;">${label}</td><td style="padding:0;font-size:${p.contactSize}px;line-height:${p.contactLine}px;color:${brand.contact};">${content}</td></tr>`;
+        const phoneRows = phones.length ? row("Phone", phones.map(phone => `<a href="${escapeHtml(phoneHref(phone))}" style="${linkStyle}white-space:nowrap;">${escapeHtml(phone)}</a>`).join(" &nbsp;-&nbsp; ")) : "";
+        const emailRow = state.email ? row("Email", `<a href="mailto:${escapeHtml(state.email)}" style="${linkStyle}">${escapeHtml(state.email)}</a>`) : "";
+        const website = webLink(state.website);
+        return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${p.width}" bgcolor="#ffffff" style="width:${p.width}px;table-layout:fixed;border-collapse:collapse;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:${brand.ink};">
+  <tr>
+    <td width="${p.left}" style="width:${p.left}px;">&nbsp;</td>
+    <td width="${p.photo}" valign="top" style="width:${p.photo}px;padding-top:${p.top}px;">${state.photo ? `<img src="${asset(state.photo)}" width="${p.photo}" height="${p.photo}" alt="${escapeHtml(state.name)}" style="display:block;width:${p.photo}px;height:${p.photo}px;border:0;border-radius:${p.photo/2}px;object-fit:cover;">` : ""}</td>
+    <td width="${p.gap}" style="width:${p.gap}px;">&nbsp;</td>
+    <td width="${p.info}" valign="top" style="width:${p.info}px;padding-top:${p.top}px;padding-bottom:24px;">
+      <img src="${asset(state.logo)}" width="${p.logoWidth}" height="${p.logoHeight}" alt="${brand.name}" style="display:block;width:${p.logoWidth}px;height:${p.logoHeight}px;border:0;margin:0 0 12px 0;">
+      <div style="font-size:${p.nameSize}px;line-height:${p.nameSize+4}px;font-weight:700;color:${brand.ink};">${escapeHtml(state.name || "Your name")}</div>
+      ${displayTitle ? `<div style="font-size:${p.titleSize}px;line-height:21px;color:${brand.muted};margin-top:3px;">${escapeHtml(displayTitle)}</div>` : ""}
+      ${phones.length || state.email ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;margin-top:15px;">${phoneRows}${emailRow}</table>` : ""}
+      ${website ? `<div style="font-size:${p.titleSize+2}px;line-height:24px;font-weight:700;margin-top:12px;"><a href="${escapeHtml(website)}" style="color:${brand.accent};text-decoration:none;">${escapeHtml(website.replace(/^https?:\/\//i, "").replace(/\/$/, ""))}</a></div>` : ""}
+      ${socials.length ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:14px;"><tr>${socials.map(([,url,icon,label],index) => socialCell(url,icon,label,index === socials.length-1 ? 0 : 12,hosted)).join("")}</tr></table>` : ""}
+
+    </td>
+    <td width="${p.right}" style="width:${p.right}px;">&nbsp;</td>
+  </tr>
+${brand.footer === "portfolio" ? `  <tr><td colspan="5" style="padding:0 16px 16px;background:#FFFFFF;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${p.width-32}" bgcolor="#0D0C0B" style="width:${p.width-32}px;border-collapse:separate;border-spacing:0;background:#0D0C0B;border-radius:18px;overflow:hidden;"><tr><td align="center" style="padding:22px 16px 0;background:#0D0C0B;border-radius:18px 18px 0 0;font-family:Arial,Helvetica,sans-serif;color:#FFFFFF;font-size:26px;line-height:29px;text-align:center;">${state.headlinePrimary ? `<div style="font-weight:700;letter-spacing:-.7px;color:#FFFFFF;">${escapeHtml(state.headlinePrimary)}</div>` : ""}${state.headlineSecondary ? `<div style="font-weight:700;letter-spacing:-.7px;color:#FFFFFF;">${escapeHtml(state.headlineSecondary)}</div>` : ""}</td></tr><tr><td style="padding:0;"><a href="${escapeHtml(webLink(state.website||brand.website))}" style="text-decoration:none;"><img src="${asset(brandAsset(brand.banner))}" width="${p.width-32}" height="175" alt="Vidaloops creative showcase: product campaigns, fashion, dance and stories brought to life." style="display:block;width:${p.width-32}px;height:175px;border:0;border-radius:0 0 18px 18px;"></a></td></tr></table></td></tr>` : `  <tr><td colspan="5" style="padding:0 16px 16px;background:#FFFFFF;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${p.width-32}" bgcolor="#111111" style="width:${p.width-32}px;border-collapse:separate;border-spacing:0;background:#111111;border-radius:18px;overflow:hidden;"><tr><td style="padding:0;"><img src="${asset(brandAsset(brand.banner))}" width="${p.width-32}" height="110" alt="${brand.name} handles calls and messages, appointments, lead follow-ups and outbound calls." style="display:block;width:${p.width-32}px;height:110px;border:0;border-radius:18px 18px 0 0;"></td></tr><tr><td align="center" style="padding:6px 12px 20px;background:#111111;border-radius:0 0 18px 18px;font-family:Arial,Helvetica,sans-serif;color:#FFFFFF;font-size:20px;line-height:24px;text-align:center;">${state.headlinePrimary ? `<div style="font-weight:700;letter-spacing:-.5px;color:#FFFFFF;">${escapeHtml(state.headlinePrimary)}</div>` : ""}${state.headlineSecondary ? `<div style="font-family:'Helvetica Neue','Segoe UI',Arial,sans-serif;font-weight:300;letter-spacing:0;color:#D1D9D5;">${escapeHtml(state.headlineSecondary)}</div>` : ""}</td></tr></table></td></tr>`}
+</table>`;
+      }
+
+      function update() {
+        Object.entries(fields).forEach(([key, field]) => {
+          if (key !== "photo" && key !== "brand") state[key] = field.type === "checkbox" ? field.checked : field.value.trim();
+        });
+        state.photo = localPhotoData || fields.photo.value.trim();
+        const preset = signaturePreset;
+        document.documentElement.style.setProperty("--signature-width", `${preset.width}px`);
+        document.documentElement.style.setProperty("--signature-min-height", `${preset.previewHeight}px`);
+        signatureSize.textContent = `${preset.width} px`;
+        preview.innerHTML = signatureMarkup(false);
+        saveDraft();
+      }
+
+      document.querySelector("#signature-form").addEventListener("input", update);
+      fields.brand.addEventListener("change", () => {saveDraft();applyBrand(fields.brand.value);update();});
+      fields.photo.addEventListener("input", () => { localPhotoData = ""; photoFilename=""; pendingPhotoUrl=""; publishing.hidden=true; update(); });
+
+      document.querySelectorAll(".logo-option").forEach(button => {
+        button.addEventListener("click", () => {
+          state.logo = button.dataset.logo;
+          document.querySelectorAll(".logo-option").forEach(option => {
+            const selected = option === button;
+            option.dataset.selected = selected;
+            option.setAttribute("aria-pressed", String(selected));
+          });
+          update();
+        });
+      });
+
+      function downloadFile(url,name) {
+        const link=document.createElement("a"); link.href=url; link.download=name; link.click();
+      }
+      document.querySelector("#choose-photo").addEventListener("click", () => document.querySelector("#photo-upload").click());
+
+      document.querySelector("#photo-upload").addEventListener("change", async event => {
+        const [file]=event.target.files; if(!file)return;
+        if(!["image/png","image/jpeg","image/webp"].includes(file.type)||file.size>10*1024*1024){status.textContent="Choose a PNG, JPEG or WebP photo smaller than 10 MB.";event.target.value="";return;}
+        const objectUrl=URL.createObjectURL(file);
+        try {
+          const image=new Image(); image.src=objectUrl; await image.decode();
+          const canvas=document.createElement("canvas");canvas.width=512;canvas.height=512;
+          const context=canvas.getContext("2d"); context.imageSmoothingEnabled=true;context.imageSmoothingQuality="high";
+          const side=Math.min(image.naturalWidth,image.naturalHeight);
+          context.drawImage(image,(image.naturalWidth-side)/2,(image.naturalHeight-side)/2,side,side,0,0,512,512);
+          localPhotoData=canvas.toDataURL("image/png");
+          photoFilename=profileTools.photoFilename(fields.name.value,Date.now());
+          const base=publicBase(fields.assetBase.value);
+          pendingPhotoUrl=base?new URL((teamConfig.photoSiteDirectory||"photos/")+photoFilename,base).href:"";
+          fields.photo.value=pendingPhotoUrl||photoFilename;
+          publishing.hidden=false; update();
+          status.textContent="Photo ready. Save the profile PNG, upload it to GitHub, then use the published photo.";
+        } catch { status.textContent="That photo could not be opened. Try another PNG or JPEG."; }
+        finally {URL.revokeObjectURL(objectUrl);event.target.value="";}
+      });
+      document.querySelector("#save-photo").addEventListener("click",()=>{if(localPhotoData&&photoFilename)downloadFile(localPhotoData,photoFilename);});
+      document.querySelector("#use-published-photo").addEventListener("click",async()=>{
+        const url=pendingPhotoUrl||fields.photo.value.trim();
+        if(!profileTools.isPublicHttps(url)){status.textContent="Publish the photo first, then enter its public HTTPS image URL.";return;}
+        const button=document.querySelector("#use-published-photo");button.disabled=true;
+        try {
+          const image=new Image();image.src=url;let timeout;try {await Promise.race([image.decode(),new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error("Image load timed out")),15000);})]);}finally{clearTimeout(timeout);}
+          localPhotoData="";fields.photo.value=url;pendingPhotoUrl="";photoFilename="";publishing.hidden=true;update();
+          status.textContent="Your published photo is ready for outgoing email.";
+        } catch {status.textContent="The photo is not online yet. Commit the PNG on GitHub and wait for the site to finish updating, then try again.";}
+        finally {button.disabled=false;}
+      });
+      document.querySelector("#reset-profile").addEventListener("click",()=>{
+        const selected=state.brand;const brand=brandProfiles[selected];
+        const values={...defaults,website:brand.website,email:'',photo:brandAsset(brand.placeholder),headlinePrimary:brand.headlinePrimary,headlineSecondary:brand.headlineSecondary};
+        brandDrafts[selected]={values,logo:brandAsset(brand.logoWhite),localPhotoData:'',photoFilename:'',pendingPhotoUrl:''};
+        applyBrand(selected);update();status.textContent='Your '+brand.name+' details have been reset in this browser.';
+      });
+
+      async function copyRichSignature(html) {
+        if (navigator.clipboard?.write && window.ClipboardItem) {
+          try {
+            await navigator.clipboard.write([new ClipboardItem({
+              "text/html": new Blob([html], { type: "text/html" }),
+              "text/plain": new Blob([[state.name, state.title, state.phonePrimary, state.phoneSecondary, state.email, state.website, state.headlinePrimary, state.headlineSecondary].filter(Boolean).join("\n")], { type: "text/plain" })
+            })]);
+            return;
+          } catch (error) {
+            // Local file previews may not grant the modern clipboard permission.
+          }
+        }
+
+        const holder = document.createElement("div");
+        holder.contentEditable = "true";
+        holder.innerHTML = html;
+        holder.style.cssText = "left:-9999px;position:fixed;top:0;";
+        document.body.append(holder);
+        const range = document.createRange();
+        range.selectNodeContents(holder);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        const copied = document.execCommand("copy");
+        selection.removeAllRanges();
+        holder.remove();
+        if (!copied) throw new Error("Clipboard copy failed.");
+      }
+
+      document.querySelector("#copy-signature").addEventListener("click", async () => {
+        update();
+        if (!state.name) {status.textContent="Add your name before copying your signature.";fields.name.focus();return;}
+        if (localPhotoData || /^(data|file):/i.test(state.photo)) {
+          status.textContent = "Publish your photo first, then choose Use published photo before copying.";
+          return;
+        }
+        if (!publicBase(state.assetBase)) {
+          status.textContent = "Add a public HTTPS image hosting URL before copying into email. You can download and review the HTML now.";
+          fields.assetBase.focus();
+          return;
+        }
+        try {
+          await copyRichSignature(signatureMarkup(true));
+          status.textContent = "Formatted signature copied. Paste it into your email signature editor.";
+        } catch {
+          status.textContent = "Copy was unavailable. Download the HTML instead.";
+        }
+      });
+
+      document.querySelector("#download-signature").addEventListener("click", () => {
+        update();
+        if(localPhotoData){status.textContent="Publish your photo first, then choose Use published photo before downloading your email signature.";return;}
+        const documentHtml = `<!doctype html><html><head><meta charset="utf-8"><title>${brandProfiles[state.brand].name} Email Signature</title></head><body>${signatureMarkup(true)}</body></html>`;
+        const url = URL.createObjectURL(new Blob([documentHtml], { type: "text/html" }));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${state.brand}-email-signature.html`;
+        link.click();
+        URL.revokeObjectURL(url);
+        status.textContent = publicBase(state.assetBase) ? "Signature HTML downloaded with hosted images." : "HTML downloaded. Keep it beside the assets folder to preview; add public image hosting before using it in email.";
+      });
+
+      restoreDraft();
+      document.querySelectorAll(".logo-option").forEach(option=>{const selected=option.dataset.logo===state.logo;option.dataset.selected=String(selected);option.setAttribute("aria-pressed",String(selected));});
+      update();
+    </script>
+  </body>
+</html>
