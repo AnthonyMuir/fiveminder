@@ -142,6 +142,7 @@
       }
 
       .field { display: block; margin: 0 0 13px; }
+      .field[hidden] { display: none; }
       .field:last-child { margin-bottom: 0; }
       .social-control { margin: 0 0 13px; }
       .social-control:last-child { margin-bottom: 0; }
@@ -588,7 +589,8 @@
         document.documentElement.style.setProperty('--wash',brand.wash);
         fields.email.placeholder='you@'+new URL(brand.website).hostname;
         fields.website.placeholder=brand.website;
-        fields.headlineSecondary.closest('label').querySelector('.field-label').textContent=brand.footer==='portfolio'?'Second line':'Light line';
+        fields.headlinePrimary.closest('label').querySelector('.field-label').textContent='Slogan';
+        fields.headlineSecondary.closest('label').hidden=true;
         document.querySelectorAll('.logo-option').forEach((option,index)=>{
           const logo=brandAsset(index===0?brand.logoWhite:brand.logoTransparent);
           option.dataset.logo=logo;option.querySelector('img').src=logo;
@@ -612,6 +614,10 @@
         // Replace the original reskin's starter slogan while preserving edited company copy.
         if(next==='vidaloops'&&profile.values.headlinePrimary==='The teammate who always picks up'&&profile.values.headlineSecondary==='and brings you in when it matters.') {
           profile.values.headlinePrimary=brand.headlinePrimary;profile.values.headlineSecondary=brand.headlineSecondary;
+        }
+        if(next==='vidaloops') {
+          profile.values.headlinePrimary=[profile.values.headlinePrimary,profile.values.headlineSecondary].filter(Boolean).join(' ');
+          profile.values.headlineSecondary='';
         }
         if(next==='fiveminder') {profile.values.headlinePrimary='';profile.values.headlineSecondary='';}
         state.brand=next;fields.brand.value=next;
@@ -698,7 +704,7 @@
     </td>
     <td width="${p.right}" style="width:${p.right}px;">&nbsp;</td>
   </tr>
-${brand.footer === "portfolio" ? `  <tr><td colspan="5" style="padding:0 16px 16px;background:#FFFFFF;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${p.width-32}" bgcolor="#0D0C0B" style="width:${p.width-32}px;border-collapse:separate;border-spacing:0;background:#0D0C0B;border-radius:18px;overflow:hidden;"><tr><td align="center" style="padding:22px 16px 0;background:#0D0C0B;border-radius:18px 18px 0 0;font-family:Arial,Helvetica,sans-serif;color:#FFFFFF;font-size:26px;line-height:29px;text-align:center;">${state.headlinePrimary ? `<div style="font-weight:700;letter-spacing:-.7px;color:#FFFFFF;">${escapeHtml(state.headlinePrimary)}</div>` : ""}${state.headlineSecondary ? `<div style="font-weight:700;letter-spacing:-.7px;color:#FFFFFF;">${escapeHtml(state.headlineSecondary)}</div>` : ""}</td></tr><tr><td style="padding:0;"><a href="${escapeHtml(webLink(state.website||brand.website))}" style="text-decoration:none;"><img src="${asset(brandAsset(brand.banner))}" width="${p.width-32}" height="175" alt="Vidaloops creative showcase: product campaigns, fashion, dance and stories brought to life." style="display:block;width:${p.width-32}px;height:175px;border:0;border-radius:0 0 18px 18px;"></a></td></tr></table></td></tr>` : `  <tr><td colspan="5" style="padding:0 16px 16px;background:#FFFFFF;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${p.width-32}" bgcolor="#111111" style="width:${p.width-32}px;border-collapse:separate;border-spacing:0;background:#111111;border-radius:18px;overflow:hidden;"><tr><td style="padding:0 0 18px;"><img src="${asset(brandAsset(brand.banner))}" width="${p.width-32}" height="110" alt="${brand.name} handles calls and messages, appointments, lead follow-ups and outbound calls." style="display:block;width:${p.width-32}px;height:110px;border:0;border-radius:18px;"></td></tr></table></td></tr>`}
+${brand.footer === "portfolio" ? `  <tr><td colspan="5" style="padding:0 16px 16px;background:#FFFFFF;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${p.width-32}" bgcolor="#0D0C0B" style="width:${p.width-32}px;border-collapse:separate;border-spacing:0;background:#0D0C0B;border-radius:18px;overflow:hidden;"><tr><td align="center" style="padding:22px 16px 0;background:#0D0C0B;border-radius:18px 18px 0 0;font-family:Arial,Helvetica,sans-serif;color:#FFFFFF;font-size:26px;line-height:29px;text-align:center;">${state.headlinePrimary ? `<div style="font-weight:700;letter-spacing:-.7px;color:#FFFFFF;white-space:nowrap;">${escapeHtml(state.headlinePrimary)}</div>` : ""}</td></tr><tr><td style="padding:0;"><a href="${escapeHtml(webLink(state.website||brand.website))}" style="text-decoration:none;"><img src="${asset(brandAsset(brand.banner))}" width="${p.width-32}" height="175" alt="Vidaloops creative showcase: product campaigns, fashion, dance and stories brought to life." style="display:block;width:${p.width-32}px;height:175px;border:0;border-radius:0 0 18px 18px;"></a></td></tr></table></td></tr>` : `  <tr><td colspan="5" style="padding:0 16px 16px;background:#FFFFFF;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${p.width-32}" bgcolor="#111111" style="width:${p.width-32}px;border-collapse:separate;border-spacing:0;background:#111111;border-radius:18px;overflow:hidden;"><tr><td style="padding:0 0 18px;"><img src="${asset(brandAsset(brand.banner))}" width="${p.width-32}" height="110" alt="${brand.name} handles calls and messages, appointments, lead follow-ups and outbound calls." style="display:block;width:${p.width-32}px;height:110px;border:0;border-radius:18px;"></td></tr></table></td></tr>`}
 </table>`;
       }
 
