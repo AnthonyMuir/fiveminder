@@ -8,7 +8,7 @@
     vidaloops: {
       footer:'portfolio', headlinePrimary:'Turn your Visuals into Motion', headlineSecondary:'',
       name:'Vidaloops', website:'https://vidaloops.com', accent:'#FF393F', ink:'#281923', muted:'#74636c', contact:'#382631', wash:'#f8f0f2',
-      logoWhite:'vidaloops-logo-white.png', logoTransparent:'vidaloops-logo.png', emblem:'vidaloops-emblem.png', banner:'vidaloops-portfolio-art.png', placeholder:'vidaloops-profile-placeholder.png'
+      logoWhite:'vidaloops-logo-white.png', logoTransparent:'vidaloops-logo.png', emblem:'vidaloops-emblem.png', banner:'vidaloops-portfolio-dancers.png', placeholder:'vidaloops-profile-placeholder.png'
     }
   };
 });

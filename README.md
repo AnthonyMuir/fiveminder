@@ -2,6 +2,10 @@
 
 Team editor: https://fiveminder.pages.dev/
 
+Latest 3D footer preview: https://fiveminder.pages.dev/?footer=orbit
+
+Vidaloops editor: https://fiveminder.pages.dev/?footer=orbit&brand=vidaloops
+
 Choose your company, enter your name, title, contact details and social links, then copy the signature into your email client's signature settings. Each company has its own browser draft. The headline remains editable. All outgoing images use PNG; no SVG support is required.
 
 ## Profile photos
@@ -12,7 +16,7 @@ Selecting a photo alone does not publish it. Photos committed here are public so
 
 ## Branding
 
-FiveMinder uses the approved green logo and black capability footer. Vidaloops uses its supplied logo, pink/coral/orange palette, and “Turn your Visuals into Motion” slogan. Its static portfolio collage was adapted from the supplied gallery reference using image generation; it is illustrative artwork, not extracted video frames.
+FiveMinder uses the approved green logo and black capability footer. Vidaloops uses its supplied logo, pink/coral/orange palette, and “Turn your Visuals into Motion” slogan. Its latest floating portfolio includes wedding, fashion, product ads and a distant dancing card around an editable central slogan. Its static portfolio collage was adapted from the supplied gallery reference using image generation; it is illustrative artwork, not extracted video frames.
 
 ## Hosting
 
