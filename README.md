@@ -6,13 +6,13 @@ Latest 3D footer preview: https://fiveminder.pages.dev/?footer=orbit
 
 Vidaloops editor: https://fiveminder.pages.dev/?footer=orbit&brand=vidaloops
 
-Choose your company, enter your name, title, contact details and social links, then copy the signature into your email client's signature settings. Each company has its own browser draft. The headline remains editable. All outgoing images use PNG; no SVG support is required.
+The shared editor link always opens Sean’s default sample. Choose your company and click **Create my signature** to start a separate personal profile, enter your name, title, contact details and social links, and copy it into your email client's signature settings. Editing the sample also automatically creates a personal profile. No one’s edits or photo become the shared sample. The headline remains editable. All outgoing images use PNG; no SVG support is required.
 
 ## Profile photos
 
 Choose **Choose photo** and select a PNG, JPEG or WebP (up to 10 MB). The editor center-crops it to a crisp 512 × 512 PNG, uploads it automatically to Cloudflare, checks that its public image URL loads, and saves that URL in your browser draft. Then click **Copy signature**. No GitHub account or manual publishing steps are needed. You can also paste an existing public HTTPS image URL.
 
-Uploaded photos are public so email recipients can display them. Existing photo links are never overwritten; choosing a new photo does not break older emails. Upload errors retain the previous photo. Drafts and contact details remain in your browser; only the prepared photo is sent to Cloudflare. Profile photos do not sync between devices automatically.
+Uploaded photos are public so email recipients can display them. Existing photo links are never overwritten; choosing a new photo does not break older emails. Upload errors retain the previous photo. Drafts and contact details remain in your browser; only the prepared photo is sent to Cloudflare. Use **Copy personal editor link** to reopen the profile on another device. Each copied link carries the profile details at that time in its URL fragment; it is not a live account sync. Keep the latest link after changing details. Anyone with it can view those details. The browser saves subsequent edits locally and updates the current personal URL; an older link cannot overwrite a newer local draft.
 
 The upload endpoint accepts only prepared 512-pixel PNGs up to 1 MB, uses immutable content-addressed URLs, deduplicates identical images, restricts browser origins, and applies a best-effort ten-new-images-per-IP-per-hour limit. This is a public team editor, not an authenticated private media vault. KV consistency means rate counters are approximate. A 900-image capacity guard keeps this namespace below the free storage allowance; an administrator can review storage in Cloudflare if it fills up.
 
@@ -28,6 +28,6 @@ Static logos and artwork remain on GitHub/Cloudflare Pages. `_worker.js` handles
 
 Deploy all runtime files through the existing GitHub integration (dashboard direct-upload does not deploy Functions). The root build output stays `/`. Do not place credentials in `config.js`; this uploader requires none in the browser.
 
-The starter profile is prefilled with Sean Anthony Muir’s sample details and hosted photo. Choose **Restore sample** to bring them back. Saved team edits remain in their own browser drafts. The editor has been checked in Chromium; rendering in individual email clients can vary.
+The starter sample is prefilled with Sean Anthony Muir’s details and hosted photo. **View default sample** returns to it without erasing personal profiles. Use the **Saved signature** menu to reopen profiles saved in this browser; other browsers see only their own saved list. Older one-person drafts are preserved as saved profiles and no longer control the default view. The generic link is the one to share with the team; personal editor links are for the individual. Contact details are not stored in the server’s photo namespace. The editor has been checked in Chromium; rendering in individual email clients can vary.
 
 Capability icons derive from Phosphor Icons under the MIT license; `LICENSE-phosphor.txt` is included. https://github.com/phosphor-icons/core

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="signature-release" content="20260929-2">
+    <meta name="signature-release" content="20260929-3">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow,noarchive">
     <meta name="color-scheme" content="light">
@@ -20,6 +20,7 @@
       }
 
       * { box-sizing: border-box; }
+      [hidden] { display:none !important; }
 
       body {
         margin: 0;
@@ -364,7 +365,14 @@
             </select>
           </div>
         </header>
-        <p class="preview-caption">Add your details, choose a photo, and copy your signature. Your changes are saved in this browser.</p>
+        <p class="preview-caption">Choose your company, create your own signature, and copy it into your email settings.</p>
+                <div class="profile-controls" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;">
+          <select id="personal-profile" aria-label="Saved signature" style="min-width:180px;max-width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:white;"><option value="">Default sample</option></select>
+          <button id="create-profile" type="button" class="file-button">Create my signature</button>
+          <button id="copy-profile-link" type="button" class="file-button" hidden>Copy personal editor link</button>
+          <button id="view-sample" type="button" class="file-button" hidden>View default sample</button>
+        </div>
+        <p id="profile-help" class="preview-caption" role="status" aria-live="polite"></p>
         <div class="preview-scroll">
           <div id="signature-preview"></div>
         </div>
@@ -470,7 +478,7 @@
           <div class="actions">
             <button id="copy-signature" class="action action-primary" type="button">Copy signature</button>
             <button id="download-signature" class="action action-secondary" type="button">Download signature HTML</button>
-            <button id="reset-profile" class="action action-secondary" type="button">Restore sample</button>
+            <button id="reset-profile" class="action action-secondary" type="button">View default sample</button>
           </div>
           <p id="status" role="status" aria-live="polite"></p>
         </form>
@@ -479,8 +487,9 @@
 
     <script src="config.js"></script>
     <script src="profile-tools.js"></script>
+    <script src="profile-session.js?v=20260929-3"></script>
     <script src="photo-upload.js?v=20260929-2"></script>
-    <script src="brand-profiles.js?v=release-20260929-2"></script>
+    <script src="brand-profiles.js?v=release-20260929-3"></script>
     <script>
       function publicBase(value) {
         try {
@@ -555,18 +564,91 @@
       const draftKey = "fiveminder-signature:v1:" + new URL(".",window.location.href).pathname;
       fields.assetBase.value = state.assetBase;
 
-      const brandDraftKey = 'signature-studio:brands:v2:' + new URL('.',window.location.href).pathname;
-      let brandDrafts = {};
-
+      const profileSessions=window.SignatureProfiles;
+      const personalStorageKey='signature-studio:people:v1:'+new URL('.',window.location.href).pathname;
+      const profilePicker=document.querySelector('#personal-profile');
+      let personalProfiles={},activeProfileId='',brandDrafts={};
       function captureProfile() {
-        const values = {};
-        Object.entries(fields).forEach(([key,field])=>{if(key!=='assetBase'&&key!=='brand')values[key]=field.type==='checkbox'?field.checked:field.value;});
-        return {values,logo:state.logo,localPhotoData,photoFilename,pendingPhotoUrl};
+        const values={};Object.entries(fields).forEach(([key,field])=>{if(key!=='assetBase'&&key!=='brand')values[key]=field.type==='checkbox'?field.checked:field.value;});
+        return {values,logo:state.logo};
       }
-      function saveDraft() {
+      function persistPersonalProfiles(){
+        try{
+          const latest=JSON.parse(localStorage.getItem(personalStorageKey)||'{}'),merged={};
+          for(const [id,value] of Object.entries(latest))if(profileSessions.validId(id)){const person=profileSessions.clean(value);if(person)merged[id]=person;}
+          for(const [id,value] of Object.entries(personalProfiles))merged[id]=profileSessions.newest(merged[id],value);
+          personalProfiles=merged;localStorage.setItem(personalStorageKey,JSON.stringify(merged));return true;
+        }catch{return false;}
+      }
+      function refreshProfileUI(){
+        profilePicker.replaceChildren(new Option('Default sample',''));
+        Object.entries(personalProfiles).sort((a,b)=>b[1].updatedAt-a[1].updatedAt).forEach(([id,person])=>{
+          const profile=person.profiles[person.selected]||Object.values(person.profiles)[0];
+          profilePicker.add(new Option(profile?.values.name||'My new signature',id));
+        });
+        profilePicker.value=activeProfileId;
+        document.querySelector('#copy-profile-link').hidden=!activeProfileId;
+        document.querySelector('#view-sample').hidden=!activeProfileId;
+        document.querySelector('#profile-help').textContent=activeProfileId?'Your personal signature. Changes stay in this profile. Save your personal editor link to open it on another device; anyone with that link can view the included details.':'Default sample. This shared view always stays the same. Create your own signature, or start editing to make a separate profile.';
+      }
+      function saveDraft(){
+        if(!activeProfileId)return;
         brandDrafts[state.brand]=captureProfile();
-        try {localStorage.setItem(brandDraftKey,JSON.stringify({selected:state.brand,profiles:brandDrafts}));} catch { /* A signature still works when browser storage is unavailable. */ }
+        const person=profileSessions.clean({selected:state.brand,profiles:brandDrafts,updatedAt:Date.now()});
+        if(!person)return;
+        personalProfiles[activeProfileId]=person;
+        const saved=persistPersonalProfiles();
+        try{history.replaceState(null,'',profileSessions.link(window.location.href,activeProfileId,person));}catch{}
+        refreshProfileUI();
+        if(!saved)document.querySelector('#profile-help').textContent='Browser storage is unavailable. Copy your personal editor link to keep your signature.';
       }
+      function personalValues(brandKey){
+        const values=sampleProfileValues(brandKey);
+        for(const key of ['name','title','phonePrimary','phoneSecondary','email','x','linkedin','instagram','youtube'])values[key]='';
+        values.photo=assetUrl(brandAsset(brandProfiles[brandKey].placeholder),true);
+        return values;
+      }
+      function beginPersonalProfile(clearIdentity=false){
+        if(activeProfileId&&!clearIdentity)return;
+        activeProfileId=crypto.randomUUID();
+        const brand=state.brand;
+        brandDrafts={[brand]:clearIdentity?{values:personalValues(brand),logo:brandAsset(brandProfiles[brand].logoWhite)}:captureProfile()};
+        if(clearIdentity)applyBrand(brand);
+        saveDraft();refreshProfileUI();
+      }
+      function showDefaultSample(){
+        const brand=state.brand;
+        if(activeProfileId)saveDraft();
+        activeProfileId='';brandDrafts={};
+        const url=new URL(window.location.href);url.hash='';url.searchParams.set('brand',brand);history.replaceState(null,'',url);
+        applyBrand(brand);update();refreshProfileUI();
+        document.querySelector('#photo-status').textContent='Choose a photo to upload it automatically. Photos are public so email recipients can see them.';
+        status.textContent='Default sample restored. Your personal signatures are still saved separately.';
+      }
+      function restoreDraft(){
+        try{
+          const saved=JSON.parse(localStorage.getItem(personalStorageKey)||'{}');
+          for(const [id,value] of Object.entries(saved))if(profileSessions.validId(id)){const person=profileSessions.clean(value);if(person)personalProfiles[id]=person;}
+          // Preserve the former one-person draft, but never make it the shared default again.
+          if(!Object.keys(personalProfiles).length){
+            const legacy=JSON.parse(localStorage.getItem('signature-studio:brands:v2:'+new URL('.',window.location.href).pathname)||'null');
+            let person=profileSessions.clean(legacy);
+            if(!person){const old=JSON.parse(localStorage.getItem('fiveminder-signature:v1:'+new URL('.',window.location.href).pathname)||'null');if(old?.values)person=profileSessions.clean({selected:'fiveminder',profiles:{fiveminder:old}});}
+            if(person){personalProfiles[crypto.randomUUID()]=person;persistPersonalProfiles();}
+          }
+        }catch{}
+        const linked=profileSessions.fromHash(window.location.hash);
+        let selected='fiveminder';
+        if(linked){
+          const person=profileSessions.newest(personalProfiles[linked.id],linked.data);
+          if(person){activeProfileId=linked.id;personalProfiles[linked.id]=person;brandDrafts=person.profiles;selected=person.selected;persistPersonalProfiles();}
+        }
+        const requested=new URLSearchParams(window.location.search).get('brand');
+        if(!activeProfileId&&Object.hasOwn(brandProfiles,requested))selected=requested;
+        applyBrand(selected);refreshProfileUI();
+        if(linked&&!activeProfileId)document.querySelector('#profile-help').textContent='That personal link is incomplete. Use the full link from Copy personal editor link; the default sample is shown here.';
+      }
+
       function refreshBrandUI() {
         const brand=brandProfiles[state.brand];
         document.body.dataset.brand=state.brand;
@@ -599,17 +681,10 @@
         const brand=brandProfiles[next];
         let profile=brandDrafts[next];
         if(!profile) {
-          profile={values:sampleProfileValues(next),logo:brandAsset(brand.logoWhite),localPhotoData:'',photoFilename:'',pendingPhotoUrl:''};
+          const identity=activeProfileId?(Object.values(brandDrafts)[0]?.values||personalValues(next)):null;
+          profile={values:identity?{...personalValues(next),...identity,website:brand.website,headlinePrimary:brand.headlinePrimary,headlineSecondary:brand.headlineSecondary}:sampleProfileValues(next),logo:brandAsset(brand.logoWhite)};
         }
-        profile.values={...sampleProfileValues(next),...profile.values};
-        // Refresh empty legacy starter drafts without overwriting another person's profile.
-        if(!profile.values.name || profile.values.name===defaults.name) {
-          const sample=sampleProfileValues(next);
-          for(const key of ['name','title','photo','phonePrimary','phoneSecondary','email','website','x','linkedin','instagram']) {
-            if(!String(profile.values[key]||'').trim()) profile.values[key]=sample[key];
-          }
-          if(/profile-placeholder\.png$/.test(profile.values.photo) || /^(assets\/)?sean-headshot-email\.png$/.test(profile.values.photo)) profile.values.photo=sample.photo;
-        }
+        profile.values={...(activeProfileId?personalValues(next):sampleProfileValues(next)),...profile.values};
         // Replace the original reskin's starter slogan while preserving edited company copy.
         if(next==='vidaloops'&&profile.values.headlinePrimary==='The teammate who always picks up'&&profile.values.headlineSecondary==='and brings you in when it matters.') {
           profile.values.headlinePrimary=brand.headlinePrimary;profile.values.headlineSecondary=brand.headlineSecondary;
@@ -628,23 +703,10 @@
         });
         const allowed=[brandAsset(brand.logoWhite),brandAsset(brand.logoTransparent)];
         state.logo=allowed.includes(profile.logo)?profile.logo:allowed[0];
-        if(profile.localPhotoData)fields.photo.value=sampleProfileValues(next).photo;
+        if(profile.localPhotoData)fields.photo.value=activeProfileId?personalValues(next).photo:sampleProfileValues(next).photo;
         localPhotoData='';photoFilename='';pendingPhotoUrl='';
         refreshBrandUI();
       }
-      function restoreDraft() {
-        let selected='fiveminder';
-        try {
-          const saved=JSON.parse(localStorage.getItem(brandDraftKey)||'null');
-          if(saved&&saved.profiles&&typeof saved.profiles==='object') {brandDrafts=saved.profiles;selected=saved.selected;}
-          else {
-            const legacy=JSON.parse(localStorage.getItem('fiveminder-signature:v1:'+new URL('.',window.location.href).pathname)||'null');
-            if(legacy&&legacy.values)brandDrafts.fiveminder=legacy;
-          }
-        } catch { /* Use the starter profile if a saved draft is damaged. */ }
-        applyBrand(selected);
-      }
-
       function escapeHtml(value) {
         return String(value || "").replace(/[&<>'\"]/g, char => ({
           "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;"
@@ -734,12 +796,13 @@ ${orbitPreview && state.brand === "fiveminder" ? `  <tr><td colspan="5" style="p
         saveDraft();
       }
 
-      document.querySelector("#signature-form").addEventListener("input", update);
+      document.querySelector("#signature-form").addEventListener("input", () => {beginPersonalProfile();update();});
       fields.brand.addEventListener("change", () => {saveDraft();applyBrand(fields.brand.value);update();});
       fields.photo.addEventListener("input", () => { localPhotoData="";photoFilename="";pendingPhotoUrl="";document.querySelector('#photo-status').textContent='';update(); });
 
       document.querySelectorAll(".logo-option").forEach(button => {
         button.addEventListener("click", () => {
+          beginPersonalProfile();
           state.logo = button.dataset.logo;
           document.querySelectorAll(".logo-option").forEach(option => {
             const selected = option === button;
@@ -754,8 +817,9 @@ ${orbitPreview && state.brand === "fiveminder" ? `  <tr><td colspan="5" style="p
 
       document.querySelector("#photo-upload").addEventListener("change", async event => {
         const [file]=event.target.files;if(!file)return;
+        beginPersonalProfile();
         const photoStatus=document.querySelector('#photo-status');
-        const locked=[fields.brand,fields.photo,document.querySelector('#choose-photo'),document.querySelector('#reset-profile')].filter(Boolean);
+        const locked=[fields.brand,fields.photo,document.querySelector('#choose-photo'),document.querySelector('#reset-profile'),profilePicker,document.querySelector('#create-profile'),document.querySelector('#view-sample'),document.querySelector('#copy-profile-link')].filter(Boolean);
         photoUploading=true;locked.forEach(control=>control.disabled=true);
         try {
           const url=await window.FiveMinderPhoto.upload(file,'https://fiveminder.pages.dev/api/photos',message=>{photoStatus.textContent=message;});
@@ -765,12 +829,7 @@ ${orbitPreview && state.brand === "fiveminder" ? `  <tr><td colspan="5" style="p
         }catch(error){photoStatus.textContent=error.message||'The photo could not upload. Please try again.';}
         finally{photoUploading=false;locked.forEach(control=>control.disabled=false);event.target.value='';}
       });
-      document.querySelector("#reset-profile").addEventListener("click",()=>{
-        const selected=state.brand;const brand=brandProfiles[selected];
-        const values=sampleProfileValues(selected);
-        brandDrafts[selected]={values,logo:brandAsset(brand.logoWhite),localPhotoData:'',photoFilename:'',pendingPhotoUrl:''};
-        applyBrand(selected);update();status.textContent='Your '+brand.name+' sample details have been restored in this browser.';
-      });
+      document.querySelector("#reset-profile").addEventListener("click",showDefaultSample);
 
       async function copyRichSignature(html) {
         if (navigator.clipboard?.write && window.ClipboardItem) {
@@ -834,10 +893,29 @@ ${orbitPreview && state.brand === "fiveminder" ? `  <tr><td colspan="5" style="p
         status.textContent = publicBase(state.assetBase) ? "Signature HTML downloaded with hosted images." : "HTML downloaded. Keep it beside the assets folder to preview; add public image hosting before using it in email.";
       });
 
+      document.querySelector('#create-profile').addEventListener('click',()=>{beginPersonalProfile(true);update();fields.name.focus();status.textContent='Your new personal signature is ready to edit.';});
+      document.querySelector('#view-sample').addEventListener('click',showDefaultSample);
+      profilePicker.addEventListener('change',()=>{
+        if(!profilePicker.value){showDefaultSample();return;}
+        const id=profilePicker.value;
+        if(activeProfileId)saveDraft();
+        const person=personalProfiles[id];if(!person)return;
+        activeProfileId=id;brandDrafts=person.profiles;applyBrand(person.selected);update();refreshProfileUI();
+        document.querySelector('#photo-status').textContent='Your saved profile photo is ready.';
+      });
+      document.querySelector('#copy-profile-link').addEventListener('click',async()=>{
+        if(!activeProfileId)return;saveDraft();
+        const base=new URL('https://fiveminder.pages.dev/');
+        if(orbitPreview)base.searchParams.set('footer','orbit');
+        const link=profileSessions.link(base.href,activeProfileId,personalProfiles[activeProfileId]);
+        try{await navigator.clipboard.writeText(link);status.textContent='Personal editor link copied. Save it for another device; anyone with the link can view these details.';}
+        catch{const input=document.createElement('input');input.value=link;document.body.append(input);input.select();const copied=document.execCommand('copy');input.remove();status.textContent=copied?'Personal editor link copied. Keep it for yourself.':'Copy the full address from your browser to keep your personal signature.';}
+      });
+      window.addEventListener('hashchange',()=>{
+        if(photoUploading){window.location.reload();return;}
+        activeProfileId='';brandDrafts={};restoreDraft();update();
+      });
       restoreDraft();
-      const requestedBrand = new URLSearchParams(window.location.search).get("brand");
-      if (requestedBrand && Object.prototype.hasOwnProperty.call(brandProfiles, requestedBrand)) applyBrand(requestedBrand);
-      document.querySelectorAll(".logo-option").forEach(option=>{const selected=option.dataset.logo===state.logo;option.dataset.selected=String(selected);option.setAttribute("aria-pressed",String(selected));});
       update();
     </script>
   </body>
