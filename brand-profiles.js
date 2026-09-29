@@ -1,7 +1,7 @@
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.SignatureBrands=factory();})(typeof window==='object'?window:this,function(){
   return {
     fiveminder: {
-      footer:'capabilities', headlinePrimary:'The teammate who always picks up', headlineSecondary:'and brings you in when it matters.',
+      footer:'capabilities', headlinePrimary:'', headlineSecondary:'',
       name:'FiveMinder', website:'https://fiveminder.ai', accent:'#00C479', ink:'#102b25', muted:'#63736c', contact:'#243e35', wash:'#edf3ee',
       logoWhite:'5minder-logo-white.png', logoTransparent:'5minder-logo.png', emblem:'5minder-emblem.png', banner:'5minder-banner-art.png', placeholder:'profile-placeholder.png'
     },
