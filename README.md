@@ -1,27 +1,25 @@
-# FiveMinder signatures
+# FiveMinder and Vidaloops signatures
 
-Team editor stored in GitHub and hosted on Cloudflare Pages. Open the published website to edit your own name, role, contact details and photo. Each person’s draft is saved only in their browser.
+Team editor: https://fiveminder.pages.dev/
 
-## Company versions
-
-The selector offers FiveMinder and Vidaloops using the same full signature layout. Each company has separate browser drafts, branding, logo, website and export filename. The compact version is retired. Vidaloops assets derive from the supplied logo, using pink #FF0079, coral #FF393F and orange #FF8200; the top logo has dark lettering for the white background. A new company draft keeps the person's identity and phone numbers, and starts its email field blank.
+Choose your company, enter your name, title, contact details and social links, then copy the signature into your email client's signature settings. Each company has its own browser draft. The headline remains editable. All outgoing images use PNG; no SVG support is required.
 
 ## Profile photos
 
-Choose a photo, save the prepared profile PNG, upload it into this repository’s `photos/` folder using the editor’s GitHub button, then return and choose **Use published photo** after Pages finishes deploying. Publishing a photo requires GitHub write access to this repository. Existing public HTTPS photo URLs also work.
+Choose a photo in the editor and save the prepared profile PNG. Use the editor's GitHub button to upload it into this repository's `photos/` folder. After Cloudflare deploys the change, return to the editor and choose **Use published photo**. GitHub write access is required to upload. An existing public HTTPS photo URL also works.
 
-Copy the formatted signature into your email client. Signatures use PNG images and HTML text, with no SVG dependency.
+Selecting a photo alone does not publish it. Photos committed here are public so email recipients can display them.
+
+## Branding
+
+FiveMinder uses the approved green logo and black capability footer. Vidaloops uses its supplied logo, pink/coral/orange palette, and “Turn your Visuals into Motion” slogan. Its static portfolio collage was adapted from the supplied gallery reference using image generation; it is illustrative artwork, not extracted video frames.
 
 ## Hosting
 
-Use a private GitHub repository, as with the original Plateau signature. In Cloudflare, choose **Workers & Pages → Create application → Pages → Connect to Git**, then select the repository. Use production branch `main`, framework **None**, leave the build command empty, and set the build output directory to `/`. Cloudflare supplies the public HTTPS site address after deployment; the editor automatically uses that address for all shared PNG images and published photos.
+Source: `AnthonyMuir/fiveminder`, production branch `main`. Cloudflare Pages uses framework **None**, no build command, and output directory `/`. Commits automatically deploy the editor and shared images. The deployed HTTPS address is used automatically for email image URLs.
 
-The editor's `config.js` must name the connected GitHub repository. The prepared value is `AnthonyMuir/fiveminder`; confirm that destination before publishing. Upload these files plus the `photos/` directory to the repository root. No GitHub Pages deployment is needed.
+This static site uses no paid image service, Functions or R2 bucket. Hosting details: https://developers.cloudflare.com/pages/get-started/git-integration/
 
-This is a static Pages site: no paid image service, Functions, R2 bucket, or subscription is required. Cloudflare Free currently allows 500 builds per month, 20,000 files, and 25 MiB per asset. Each committed photo triggers a deployment, so stay within the build limit. Private GitHub repositories are supported by Cloudflare Pages.
+The starter profile contains no personal contact information. The editor has been checked in Chromium; rendering in individual email clients can vary.
 
-References: https://developers.cloudflare.com/pages/get-started/git-integration/ and https://developers.cloudflare.com/pages/platform/limits/
-
-The initial files contain a neutral profile and no credentials or personal contact details. PNG photos added to `photos/` become publicly accessible through Cloudflare so email recipients can load them, even when the GitHub repository is private. Publishing photos requires GitHub access, or a teammate can provide an already hosted HTTPS photo URL. Selecting a photo alone does not publish it. The signature has been checked in Chromium; actual sent email clients and the live Cloudflare deployment have not yet been tested.
-
-Capability icons are derived from Phosphor Icons (MIT); the license is included. https://github.com/phosphor-icons/core
+Capability icons derive from Phosphor Icons under the MIT license; `LICENSE-phosphor.txt` is included. https://github.com/phosphor-icons/core
